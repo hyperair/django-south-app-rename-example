@@ -9,6 +9,13 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
         db.rename_table('old_app_something', 'new_app_something')
 
+        # HACK: Replace app name in db.pending_create_signals to avoid crashing
+        # out at the end of the migration.
+        create_signals = db.get_pending_creates()
+        for i in xrange(0, len(create_signals)):
+            if create_signals[i][0] == 'old_app':
+                create_signals[i] = ('new_app', create_signals[i][1])
+
 
     def backwards(self, orm):
         db.rename_table('new_app_something', 'old_app_something')
